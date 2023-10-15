@@ -9,7 +9,7 @@ namespace Scanner.Enums
     public enum TokenType
     {
        
-        IDENTIFIER,
+        IDENTIFIER, UNKNOWN_TOKEN, END_OF_CODE,
         // Literals 
         STRING, NUMBER, WHITE_SPACE,
         // Operators

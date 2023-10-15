@@ -54,18 +54,14 @@ namespace Compiler
         {
             Lexer lexer = new Lexer(SourceCode);
 
-
-            lexer.Tokenise();
-
-            List<Token> tokens = lexer.GetTokens();
-
-            Console.WriteLine(tokens.Count());
-
-
-            foreach (Token token in tokens)
+            while(true)
             {
+                var token = lexer.GetToken();
+                if (token.Type == Scanner.Enums.TokenType.END_OF_CODE) break;
                 Console.WriteLine($"Token ** {token.Type} ** {token.Word}");
+
             }
+
         }
     }
 }
