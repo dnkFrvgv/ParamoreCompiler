@@ -11,7 +11,7 @@ namespace Scanner
     public class Lexer
     {
         private readonly string _sourceCode;
-        private int currentPosition = 0;
+        private int _currentPosition = 0;
         public List<Token> tokens = new List<Token>();
 
         public Lexer(string sourceCode)
@@ -22,27 +22,27 @@ namespace Scanner
         public List<Token> GetTokens() { return tokens; }
 
         private void NextPosition() {
-            currentPosition++;
+            _currentPosition++;
         }
 
         public char SeeNextCharacter()
         {
-            if (currentPosition + 1 >= _sourceCode.Length)
+            if (_currentPosition + 1 >= _sourceCode.Length)
             {
                 return '\0';
             }
 
-            return _sourceCode[currentPosition + 1];
+            return _sourceCode[_currentPosition + 1];
         }
 
         private char GetCurrentCharacter()
         {
-            if (currentPosition >= _sourceCode.Length)
+            if (_currentPosition >= _sourceCode.Length)
             {
                 return '\0';
             }
 
-            return _sourceCode[currentPosition];  
+            return _sourceCode[_currentPosition];  
         }
 
 
@@ -54,19 +54,20 @@ namespace Scanner
                 // recognising integer numbers
                 if (Char.IsDigit(GetCurrentCharacter()))
                 {
-                    int startPosition = currentPosition;
+                    int startPosition = _currentPosition;
 
                     while(Char.IsDigit(GetCurrentCharacter()))
                     {
                         NextPosition();
                     }
                  
-                    int lengthOfNumber = currentPosition - startPosition;
+                    int lengthOfNumber = _currentPosition - startPosition;
                     string textNumber = _sourceCode.Substring(startPosition, lengthOfNumber);
                     try
                     {
                         int numberValue = int.Parse(textNumber);
                         tokens.Add(new Token(TokenType.NUMBER, textNumber, startPosition, numberValue));
+                        _currentPosition--;
                     }
                     catch (FormatException ex) 
                     { 
@@ -77,68 +78,80 @@ namespace Scanner
 
                 if (Char.IsWhiteSpace(GetCurrentCharacter()))
                 {
-                    var startPosition = currentPosition;
+                    var startPosition = _currentPosition;
 
+                    
 
+                    while (Char.IsWhiteSpace(GetCurrentCharacter()))
+                    {
+                        NextPosition();
+                    }
+
+                    var lengthOfWhiteSpace = _currentPosition - startPosition;
+                    string textWhiteSpace = _sourceCode.Substring(startPosition, lengthOfWhiteSpace);
+                    
+                    tokens.Add(new Token(TokenType.WHITE_SPACE, textWhiteSpace, startPosition, textWhiteSpace));
+                    _currentPosition--;
+                   
                 }
        
                 // recognising operators
-                if (GetCurrentCharacter() == '+')
+                if (GetCurrentCharacter() == '+') tokens.Add(new Token(TokenType.PLUS, "+", _currentPosition, null));
+                
+                if (GetCurrentCharacter() == '-') tokens.Add(new Token(TokenType.MINUS, "-", _currentPosition, null));
+                
+                if (GetCurrentCharacter() == '*') tokens.Add(new Token(TokenType.ASTERISK, "*", _currentPosition, null));
+                
+                if (GetCurrentCharacter() == '/') tokens.Add(new Token(TokenType.SLASH, "/", _currentPosition, null));
+                if (GetCurrentCharacter() == '=')
                 {
-                    tokens.Add(new Token(TokenType.PLUS, "+", currentPosition, null));
-                    NextPosition();
-                }
-                if (GetCurrentCharacter() == '-')
-                {
-                    tokens.Add(new Token(TokenType.MINUS, "-", currentPosition, null));
-                    currentPosition++;
-                }
-                if (GetCurrentCharacter() == '*')
-                {
-                    tokens.Add(new Token(TokenType.ASTERISK, "*", currentPosition, null));
-                    currentPosition++;
-                }
-                if (GetCurrentCharacter() == '/')
-                {
-                    tokens.Add(new Token(TokenType.SLASH, "/", currentPosition, null));
-                }
-                if (GetCurrentCharacter() == '>')
-                {
-                    if(SeeNextCharacter() == '=')
+                    if (SeeNextCharacter() == '=')
                     {
-                        tokens.Add(new Token(TokenType.GREATER_EQUALS, ">=", currentPosition, null));
+                        tokens.Add(new Token(TokenType.EQUALS_EQUALS, "==", _currentPosition, null));
                         NextPosition();
                     }
                     else
                     {
-                        tokens.Add(new Token(TokenType.GREATER, ">", currentPosition, null));
+                        tokens.Add(new Token(TokenType.EQUALS, "=", _currentPosition, null));
+                    }
+                }
+                if (GetCurrentCharacter() == '>')
+                {
+                    if (SeeNextCharacter() == '=')
+                    {
+                        tokens.Add(new Token(TokenType.GREATER_EQUALS, ">=", _currentPosition, null));
+                        NextPosition();
+                    }
+                    else
+                    {
+                        tokens.Add(new Token(TokenType.GREATER, ">", _currentPosition, null));
                     }
                 }
                 if (GetCurrentCharacter() == '<')
                 {
                     if (SeeNextCharacter() == '=')
                     {
-                        tokens.Add(new Token(TokenType.LESS_EQUALS, "<=", currentPosition, null));
+                        tokens.Add(new Token(TokenType.LESS_EQUALS, "<=", _currentPosition, null));
                         NextPosition();
                     }
                     else
                     {
-                        tokens.Add(new Token(TokenType.LESS, "<", currentPosition, null));
+                        tokens.Add(new Token(TokenType.LESS, "<", _currentPosition, null));
                     }
                 }
 
                 // recognising punctuation
 
-                if (GetCurrentCharacter() == '(') tokens.Add(new Token(TokenType.LEFT_PARENTHESES, "(", currentPosition, null));
-                if (GetCurrentCharacter() == ')') tokens.Add(new Token(TokenType.RIGHT_PARENTHESES, ")", currentPosition, null));
-                if (GetCurrentCharacter() == '{') tokens.Add(new Token(TokenType.LEFT_BRACES, "{", currentPosition, null));
-                if (GetCurrentCharacter() == '}') tokens.Add(new Token(TokenType.RIGHT_BRACES, "}", currentPosition, null));
-                if (GetCurrentCharacter() == '[') tokens.Add(new Token(TokenType.LEFT_BRACKETS, "[", currentPosition, null));
-                if (GetCurrentCharacter() == ']') tokens.Add(new Token(TokenType.RIGHT_BRACKETS, "]", currentPosition, null));
-                if (GetCurrentCharacter() == ',') tokens.Add(new Token(TokenType.COMMA, ",", currentPosition, null));
-                if (GetCurrentCharacter() == '.') tokens.Add(new Token(TokenType.DOT, ".", currentPosition, null));
-                if (GetCurrentCharacter() == ';') tokens.Add(new Token(TokenType.SEMICOLON, ";", currentPosition, null));
-                if (GetCurrentCharacter() == ':') tokens.Add(new Token(TokenType.COLON, ":", currentPosition, null));
+                if (GetCurrentCharacter() == '(') tokens.Add(new Token(TokenType.LEFT_PARENTHESES, "(", _currentPosition, null));
+                if (GetCurrentCharacter() == ')') tokens.Add(new Token(TokenType.RIGHT_PARENTHESES, ")", _currentPosition, null));
+                if (GetCurrentCharacter() == '{') tokens.Add(new Token(TokenType.LEFT_BRACES, "{", _currentPosition, null));
+                if (GetCurrentCharacter() == '}') tokens.Add(new Token(TokenType.RIGHT_BRACES, "}", _currentPosition, null));
+                if (GetCurrentCharacter() == '[') tokens.Add(new Token(TokenType.LEFT_BRACKETS, "[", _currentPosition, null));
+                if (GetCurrentCharacter() == ']') tokens.Add(new Token(TokenType.RIGHT_BRACKETS, "]", _currentPosition, null));
+                if (GetCurrentCharacter() == ',') tokens.Add(new Token(TokenType.COMMA, ",", _currentPosition, null));
+                if (GetCurrentCharacter() == '.') tokens.Add(new Token(TokenType.DOT, ".", _currentPosition, null));
+                if (GetCurrentCharacter() == ';') tokens.Add(new Token(TokenType.SEMICOLON, ";", _currentPosition, null));
+                if (GetCurrentCharacter() == ':') tokens.Add(new Token(TokenType.COLON, ":", _currentPosition, null));
 
                 // recognising keywords
 

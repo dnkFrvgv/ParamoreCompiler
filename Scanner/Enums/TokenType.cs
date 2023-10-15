@@ -11,7 +11,7 @@ namespace Scanner.Enums
        
         IDENTIFIER,
         // Literals 
-        STRING, NUMBER,
+        STRING, NUMBER, WHITE_SPACE,
         // Operators
         PLUS, MINUS, ASTERISK, SLASH, EQUALS, EQUALS_EQUALS, AND, 
         OR, NOT_EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS,
