@@ -6,9 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Scanner.Enums;
 
+
+
 namespace Scanner
 {
-    public class Lexer
+    public class Lexer : ILexer
     {
         private readonly string _sourceCode;
         private int _currentPosition = 0;
@@ -23,7 +25,7 @@ namespace Scanner
             _currentPosition++;
         }
 
-        public char SeeNextCharacter()
+        private char PeekNextCharacter()
         {
             if (_currentPosition + 1 >= _sourceCode.Length)
             {
@@ -32,6 +34,7 @@ namespace Scanner
 
             return _sourceCode[_currentPosition + 1];
         }
+
 
         private char GetCurrentCharacter()
         {
@@ -104,9 +107,11 @@ namespace Scanner
                 
             if (GetCurrentCharacter() == '/') return new Token(TokenType.SLASH, "/", _currentPosition++, null);
             
+            // recognising longer operators
+
             if (GetCurrentCharacter() == '=')
             {
-                if (SeeNextCharacter() == '=')
+                if (PeekNextCharacter() == '=')
                 {
                     NextPosition();
                     return new Token(TokenType.EQUALS_EQUALS, "==", _currentPosition++, null);
@@ -119,21 +124,20 @@ namespace Scanner
 
             if (GetCurrentCharacter() == '>')
             {
-                if (SeeNextCharacter() == '=')
+                if (PeekNextCharacter() == '=')
                 {
                     NextPosition();
                     return new Token(TokenType.GREATER_EQUALS, ">=", _currentPosition++, null);
                 }
                 else
                 {
-                    NextPosition();
                     return new Token(TokenType.GREATER, ">", _currentPosition++, null);
                 }
             }
             
             if (GetCurrentCharacter() == '<')
             {
-                if (SeeNextCharacter() == '=')
+                if (PeekNextCharacter() == '=')
                 {
                     NextPosition();
                     return new Token(TokenType.LESS_EQUALS, "<=", _currentPosition++, null);
@@ -141,6 +145,24 @@ namespace Scanner
                 else
                 {
                     return new Token(TokenType.LESS, "<", _currentPosition++, null);
+                }
+            }
+
+            if (GetCurrentCharacter() == '&')
+            {
+                if (PeekNextCharacter() == '&')
+                {
+                    NextPosition();
+                    return new Token(TokenType.AND, "&&", _currentPosition++, null);
+                }
+            }
+
+            if (GetCurrentCharacter() == '|')
+            {
+                if (PeekNextCharacter() == '|')
+                {
+                    NextPosition();
+                    return new Token(TokenType.OR, "||", _currentPosition++, null);
                 }
             }
 

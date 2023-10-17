@@ -1,4 +1,5 @@
-﻿using Scanner;
+﻿using Compiler.Interfaces;
+using Scanner;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,13 +10,16 @@ namespace Compiler
 {
     public class ParamoreCompiler
     {
+        private ILexer _lexer;
+
         public ParamoreCompiler(string FilePath)
         {
             RunFromFile(FilePath);
         }
 
-        public ParamoreCompiler()
+        public ParamoreCompiler(ILexer lexer)
         {
+            _lexer = lexer;
             RunPrompt();
         }
 
@@ -52,11 +56,10 @@ namespace Compiler
 
         private void Run(string SourceCode)
         {
-            Lexer lexer = new Lexer(SourceCode);
 
             while(true)
             {
-                var token = lexer.GetToken();
+                var token = _lexer.GetToken();
                 if (token.Type == Scanner.Enums.TokenType.END_OF_CODE) break;
                 Console.WriteLine($"Token ** {token.Type} ** {token.Word}");
 
