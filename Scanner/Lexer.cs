@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using Scanner.Enums;
+using Scanner.Interfaces;
 
 
 
@@ -13,7 +15,10 @@ namespace Scanner
     public class Lexer : ILexer
     {
         private readonly string _sourceCode;
+        //private int _start = 0;
+        //private int line = 1;
         private int _currentPosition = 0;
+        private List<Token> _tokens = new List<Token>();
 
         public Lexer(string sourceCode)
         {
@@ -46,7 +51,20 @@ namespace Scanner
             return _sourceCode[_currentPosition];
         }
 
-        public Token GetToken()
+        public List<Token> GetTokenList()
+        {
+
+            while (true)
+            {
+                var token = GetToken();
+                _tokens.Add(token);
+                if (token.Type == TokenType.END_OF_CODE) break;              
+            }
+
+            return _tokens;
+        }
+
+        private Token GetToken()
         {
 
             // reaching end of code
@@ -69,6 +87,7 @@ namespace Scanner
                  
                 int lengthOfNumber = _currentPosition - startPosition;
                 string textNumber = _sourceCode.Substring(startPosition, lengthOfNumber);
+
                 try
                 {
                     int numberValue = int.Parse(textNumber);
@@ -179,7 +198,24 @@ namespace Scanner
             if (GetCurrentCharacter() == ';') return new Token(TokenType.SEMICOLON, ";", _currentPosition++, null);
             if (GetCurrentCharacter() == ':') return new Token(TokenType.COLON, ":", _currentPosition++, null);
 
-            // recognising keywords
+            // recognising identifies
+
+            if (Char.IsLetter(GetCurrentCharacter()) || GetCurrentCharacter() == '_')
+            {                
+                var startPosition = _currentPosition;
+
+                while (Char.IsLetterOrDigit(GetCurrentCharacter()) || GetCurrentCharacter() == '_')
+                {
+                    NextPosition();
+                }
+
+                int lengthOfIdentifier = _currentPosition - startPosition;
+                string textIdentifier = _sourceCode.Substring(startPosition, lengthOfIdentifier);
+                
+                return new Token(TokenType.IDENTIFIER, textIdentifier, startPosition, null);
+            }
+
+            // recognising reserved words
 
             // unknown characters
 

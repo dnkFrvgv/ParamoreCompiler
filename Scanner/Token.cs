@@ -9,17 +9,17 @@ namespace Scanner
 {
     public class Token
     {
-        public Token(TokenType type, string word, int position, object value)
+        public Token(TokenType type, string lexeme, int position, object literalValue)
         {
             Type = type;
-            Word = word;
+            Lexeme = lexeme;
             Position = position;
-            Value = value;
+            LiteralValue = literalValue;
 
         }
         public TokenType Type { get; }
         public int Position { get; }
-        public string Word { get; }
-        public object Value { get; }
+        public string Lexeme { get; }
+        public object LiteralValue { get; }
     }
 }
