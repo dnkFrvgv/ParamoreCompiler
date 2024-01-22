@@ -5,12 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Scanner.Interfaces;
+using Scanner.Enums;
 
 namespace Compiler
 {
     public class ParamoreCompiler
     {
         //private ILexer _lexer;
+        private bool _hasError = false;
 
         public ParamoreCompiler(string FilePath)
         {
@@ -27,7 +29,7 @@ namespace Compiler
         {
             try
             {
-                string sourceCode = File.ReadAllText(FilePath);
+                string[] sourceCode = File.ReadAllLines(FilePath);
                 Run(sourceCode);
 
             }
@@ -41,20 +43,27 @@ namespace Compiler
         {
             while (true)
             {
+                if (_hasError) break;
+
                 Console.Write("** ");
 
                 var code = Console.ReadLine();
+
+                if (code != null)
+                {
+                    string[] sourceCode = new string[1] { code };
+                    Run(sourceCode);
+                }
+
 
                 if (string.IsNullOrEmpty(code))
                 {
                     break;
                 }
-
-                Run(code);
             }
         }
 
-        private void Run(string sourceCode)
+        private void Run(string[] sourceCode)
         {
 
             Lexer lexer = new Lexer(sourceCode);
@@ -63,9 +72,21 @@ namespace Compiler
 
             foreach(var token in tokens)
             {
+                if (token.Type == TokenType.UNKNOWN_TOKEN)
+                {
+                    Error(token.Position, "Unknown character", token.Lexeme);
+                    break;
+
+                }
                 Console.WriteLine($"Token ** {token.Type} ** {token.Lexeme}");
             }
 
+        }
+
+        private void Error(int line, string message, object literalValue)
+        {
+            Console.WriteLine($"\"[line " + literalValue + "] Error:" + message);
+            _hasError = true;
         }
     }
 }

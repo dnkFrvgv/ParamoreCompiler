@@ -1,4 +1,6 @@
 ﻿using Compiler;
 using Scanner;
 
-ParamoreCompiler compiler = new ParamoreCompiler();
+
+var filepath = "C:/Users/domis/Documentos/test.txt";
+ParamoreCompiler compiler = new ParamoreCompiler(filepath);

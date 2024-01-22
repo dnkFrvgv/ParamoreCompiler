@@ -14,15 +14,17 @@ namespace Scanner
 {
     public class Lexer : ILexer
     {
-        private readonly string _sourceCode;
+        private readonly string[] _sourceCode;
+        private string _currentLine;
         //private int _start = 0;
-        //private int line = 1;
+        private int _line = 1;
         private int _currentPosition = 0;
         private List<Token> _tokens = new List<Token>();
 
-        public Lexer(string sourceCode)
+        public Lexer(string[] sourceCode)
         {
             _sourceCode = sourceCode;
+            _currentLine = _sourceCode[_line-1];
         }
 
       
@@ -32,23 +34,23 @@ namespace Scanner
 
         private char PeekNextCharacter()
         {
-            if (_currentPosition + 1 >= _sourceCode.Length)
+            if (_currentPosition + 1 >= _currentLine.Length)
             {
                 return '\0';
             }
 
-            return _sourceCode[_currentPosition + 1];
+            return _currentLine[_currentPosition + 1];
         }
 
 
         private char GetCurrentCharacter()
         {
-            if (_currentPosition >= _sourceCode.Length)
+            if (_currentPosition >= _currentLine.Length)
             {
                 return '\0';
             }
 
-            return _sourceCode[_currentPosition];
+            return _currentLine[_currentPosition];
         }
 
         public List<Token> GetTokenList()
@@ -58,21 +60,73 @@ namespace Scanner
             {
                 var token = GetToken();
                 _tokens.Add(token);
-                if (token.Type == TokenType.END_OF_CODE) break;              
+
+                if (token.Type == TokenType.END_OF_CODE) break;
             }
 
             return _tokens;
+        }
+
+        private bool IsEndOfLine()
+        {
+            return _currentPosition == _currentLine.Length;
+        }
+
+        private void NextLine()
+        {
+            if (!IsEndOfSourceCode())
+            {
+                _line++;
+                _currentLine = _sourceCode[_line-1];
+                _currentPosition = 0;
+            }
+
+        }
+
+        private bool IsEndOfSourceCode()
+        {
+            if(_line == _sourceCode.Length)
+            {
+                return true;
+            }
+            return false;
         }
 
         private Token GetToken()
         {
 
 
-            // reaching end of code
+            // reaching end of source code
 
-            if (_currentPosition == _sourceCode.Length)
+            if (_currentPosition == _currentLine.Length && IsEndOfSourceCode())
             {
                 return new Token(TokenType.END_OF_CODE, "\0", _currentPosition, null);
+            }
+
+            // reaching end of line
+
+            if (IsEndOfLine())
+            {
+                NextLine();
+            }
+
+            // skip white space
+            if (Char.IsWhiteSpace(GetCurrentCharacter()))
+            {
+                //var startPosition = _currentPosition;
+
+
+                while (Char.IsWhiteSpace(GetCurrentCharacter()))
+                {
+                    NextPosition();
+                }
+
+                /**
+                var lengthOfWhiteSpace = _currentPosition - startPosition;
+                string textWhiteSpace = _currentLine.Substring(startPosition, lengthOfWhiteSpace);
+                    
+                return new Token(TokenType.WHITE_SPACE, textWhiteSpace, startPosition, null);
+                **/
             }
 
             // recognising integer numbers
@@ -87,7 +141,7 @@ namespace Scanner
                 }
                  
                 int lengthOfNumber = _currentPosition - startPosition;
-                string textNumber = _sourceCode.Substring(startPosition, lengthOfNumber);
+                string textNumber = _currentLine.Substring(startPosition, lengthOfNumber);
 
                 try
                 {
@@ -101,33 +155,37 @@ namespace Scanner
 
             }
 
-            if (Char.IsWhiteSpace(GetCurrentCharacter()))
-            {
-                var startPosition = _currentPosition;
-
-                    
-                while (Char.IsWhiteSpace(GetCurrentCharacter()))
-                {
-                    NextPosition();
-                }
-
-                var lengthOfWhiteSpace = _currentPosition - startPosition;
-                string textWhiteSpace = _sourceCode.Substring(startPosition, lengthOfWhiteSpace);
-                    
-                return new Token(TokenType.WHITE_SPACE, textWhiteSpace, startPosition, null);
-                   
-            }
-       
             // recognising operators
             if (GetCurrentCharacter() == '+') return new Token(TokenType.PLUS, "+", _currentPosition++, null);
                 
             if (GetCurrentCharacter() == '-') return new Token(TokenType.MINUS, "-", _currentPosition++, null);
                 
             if (GetCurrentCharacter() == '*') return new Token(TokenType.ASTERISK, "*", _currentPosition++, null);
-                
-            if (GetCurrentCharacter() == '/') return new Token(TokenType.SLASH, "/", _currentPosition++, null);
-            
+
+
             // recognising longer operators
+            if (GetCurrentCharacter() == '/')
+            {
+                // skip line comment
+                if (PeekNextCharacter() == '/')
+                {
+                    /**var startPosition = _currentPosition;
+
+                    while (!IsEndOfLine()) 
+                    {
+                        NextPosition();
+                    }**/
+
+                    //int lengthOfComment = _currentPosition - startPosition;
+                    //string textComment = _currentLine.Substring(startPosition, lengthOfComment);
+
+                    NextLine();
+                }
+                else
+                {
+                    return new Token(TokenType.SLASH, "/", _currentPosition++, null);
+                }
+            }
 
             if (GetCurrentCharacter() == '=')
             {
@@ -211,7 +269,7 @@ namespace Scanner
                 }
 
                 int lengthOfIdentifier = _currentPosition - startPosition;
-                string textIdentifier = _sourceCode.Substring(startPosition, lengthOfIdentifier);
+                string textIdentifier = _currentLine.Substring(startPosition, lengthOfIdentifier);
                 
                 return new Token(TokenType.IDENTIFIER, textIdentifier, startPosition, null);
             }
@@ -220,7 +278,7 @@ namespace Scanner
 
             // unknown characters
 
-            return new Token(TokenType.UNKNOWN_TOKEN, _sourceCode.Substring(_currentPosition , 1), _currentPosition++, null);
+            return new Token(TokenType.UNKNOWN_TOKEN, _currentLine.Substring(_currentPosition , 1), _currentPosition++, null);
         }
 
     }
