@@ -11,17 +11,18 @@ namespace Compiler
 {
     public class ParamoreCompiler
     {
-        //private ILexer _lexer;
+        private ILexer _lexer;
         private bool _hasError = false;
 
-        public ParamoreCompiler(string FilePath)
+        public ParamoreCompiler(string FilePath, ILexer lexer)
         {
+            _lexer = lexer;
             RunFromFile(FilePath);
         }
 
-        public ParamoreCompiler()
+        public ParamoreCompiler(ILexer lexer)
         {
-            // _lexer = lexer;
+            _lexer = lexer;
             RunPrompt();
         }
 
@@ -32,6 +33,9 @@ namespace Compiler
                 string[] sourceCode = File.ReadAllLines(FilePath);
                 Run(sourceCode);
 
+            }
+            catch (NullReferenceException e ){
+                Console.WriteLine($"{e.Message}");
             }
             catch (Exception ex)
             {
@@ -66,9 +70,8 @@ namespace Compiler
         private void Run(string[] sourceCode)
         {
 
-            Lexer lexer = new Lexer(sourceCode);
-
-            var tokens = lexer.GetTokenList();
+            _lexer.AddSourceCode(sourceCode);
+            var tokens = _lexer.GetTokenList();
 
             foreach(var token in tokens)
             {

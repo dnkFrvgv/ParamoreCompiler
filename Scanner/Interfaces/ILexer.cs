@@ -9,5 +9,6 @@ namespace Scanner.Interfaces
     public interface ILexer
     {
         List<Token> GetTokenList();
+        void AddSourceCode(string[] sourceCode);
     }
 }

@@ -14,19 +14,26 @@ namespace Scanner
 {
     public class Lexer : ILexer
     {
-        private readonly string[] _sourceCode;
+        private string[] _sourceCode;
         private string _currentLine;
         //private int _start = 0;
         private int _line = 1;
         private int _currentPosition = 0;
         private List<Token> _tokens = new List<Token>();
 
-        public Lexer(string[] sourceCode)
+        /**public Lexer(string[] sourceCode)
         {
             _sourceCode = sourceCode;
             _currentLine = _sourceCode[_line-1];
-        }
+        }**/
 
+        public Lexer(){}
+
+        public void AddSourceCode(string[] sourceCode)
+        {
+            _sourceCode = sourceCode;
+            _currentLine = _sourceCode[_line - 1];
+        }
       
         private void NextPosition() {
             _currentPosition++;
@@ -55,16 +62,23 @@ namespace Scanner
 
         public List<Token> GetTokenList()
         {
-
-            while (true)
+       
+            if (_sourceCode == null)
             {
-                var token = GetToken();
-                _tokens.Add(token);
-
-                if (token.Type == TokenType.END_OF_CODE) break;
+                throw new NullReferenceException($"SourceCode was not added. Call AddSourceCode() method to initialise it.");
             }
+            else
+            {
+                while (true)
+                {
+                    var token = GetToken();
+                    _tokens.Add(token);
 
-            return _tokens;
+                    if (token.Type == TokenType.END_OF_CODE) break;
+                }
+
+                return _tokens;
+            }
         }
 
         private bool IsEndOfLine()
@@ -279,6 +293,8 @@ namespace Scanner
             // unknown characters
 
             return new Token(TokenType.UNKNOWN_TOKEN, _currentLine.Substring(_currentPosition , 1), _currentPosition++, null);
+
+
         }
 
     }
