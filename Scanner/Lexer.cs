@@ -67,6 +67,7 @@ namespace Scanner
         private Token GetToken()
         {
 
+
             // reaching end of code
 
             if (_currentPosition == _sourceCode.Length)
