@@ -69,13 +69,15 @@ namespace Scanner
             }
             else
             {
-                while (true)
+
+                GetToken();
+               /* while (true)
                 {
                     var token = GetToken();
                     _tokens.Add(token);
 
                     if (token.Type == TokenType.END_OF_CODE) break;
-                }
+                }*/
 
                 return _tokens;
             }
@@ -107,193 +109,153 @@ namespace Scanner
             return false;
         }
 
-        private Token GetToken()
+        private void GetToken()
         {
-
-
-            // reaching end of source code
-
-            if (_currentCharPosition == _currentLineOfSourceCode.Length && IsEndOfSourceCode())
+            while (true)
             {
-                return new Token(TokenType.END_OF_CODE, "\0", _currentCharPosition, null);
-            }
-
-            // reaching end of line
-
-            if (IsEndOfLine())
-            {
-                NextLine();
-            }
-
-            // skip white space
-            if (Char.IsWhiteSpace(GetCurrentCharacter()))
-            {
-                //var startPosition = _currentPosition;
-
-
-                while (Char.IsWhiteSpace(GetCurrentCharacter()))
+                if (IsEndOfLine())
                 {
-                    NextPosition();
+                    //TODO
+                    //check if next line exists
+                    // and deal with multiple lines
+
+                    //NextLine();
+                    break;
                 }
-
-                /**
-                var lengthOfWhiteSpace = _currentPosition - startPosition;
-                string textWhiteSpace = _currentLine.Substring(startPosition, lengthOfWhiteSpace);
-                    
-                return new Token(TokenType.WHITE_SPACE, textWhiteSpace, startPosition, null);
-                **/
-            }
-
-            // recognising integer numbers
-
-            if (Char.IsDigit(GetCurrentCharacter()))
-            {
-                int startPosition = _currentCharPosition;
-
-                while(Char.IsDigit(GetCurrentCharacter()))
+                else
                 {
-                    NextPosition();
-                }
-                 
-                int lengthOfNumber = _currentCharPosition - startPosition;
-                string textNumber = _currentLineOfSourceCode.Substring(startPosition, lengthOfNumber);
-
-                try
-                {
-                    int numberValue = int.Parse(textNumber);
-                    return new Token(TokenType.NUMBER, textNumber, startPosition, numberValue);
-                }
-                catch (FormatException ex) 
-                { 
-                    Console.WriteLine($"Invalid integer at {startPosition} {ex}.");
-                }
-
-            }
-
-            // recognising operators
-            if (GetCurrentCharacter() == '+') return new Token(TokenType.PLUS, "+", _currentCharPosition++, null);
-                
-            if (GetCurrentCharacter() == '-') return new Token(TokenType.MINUS, "-", _currentCharPosition++, null);
-                
-            if (GetCurrentCharacter() == '*') return new Token(TokenType.ASTERISK, "*", _currentCharPosition++, null);
-
-
-            // recognising longer operators
-            if (GetCurrentCharacter() == '/')
-            {
-                // skip line comment
-                if (PeekNextCharacter() == '/')
-                {
-                    /**var startPosition = _currentPosition;
-
-                    while (!IsEndOfLine()) 
+                    switch (GetCurrentCharacter())
                     {
-                        NextPosition();
-                    }**/
+                        // ignoring white spaces
+                        case ' ':
+                            NextPosition();
+                            break;
+                        // recognising basic operators
+                        case '+':
+                            _tokens.Add(new Token(TokenType.PLUS, "+", _currentCharPosition++, null));
+                            break;
+                        case '-':
+                            _tokens.Add(new Token(TokenType.MINUS, "-", _currentCharPosition++, null));
+                            break;
+                        case '*':
+                            _tokens.Add(new Token(TokenType.ASTERISK, "*", _currentCharPosition++, null));
+                            break;
+                        // recognising longer operators
+                        case '/':
+                            if (PeekNextCharacter() == '/')
+                            {
+                                // skip entire line comment
+                                NextLine();
+                                break;
+                            }
+                            
+                            _tokens.Add(new Token(TokenType.SLASH, "/", _currentCharPosition++, null));
+                            break;
+                        case '=':
+                            if (PeekNextCharacter() == '=')
+                            {
+                                NextPosition();
+                                _tokens.Add(new Token(TokenType.EQUALS_EQUALS, "==", _currentCharPosition++, null));
+                                break;
+                            }
 
-                    //int lengthOfComment = _currentPosition - startPosition;
-                    //string textComment = _currentLine.Substring(startPosition, lengthOfComment);
+                            _tokens.Add(new Token(TokenType.EQUALS, "=", _currentCharPosition++, null));
+                            break;
+                        case '>':
+                            if (PeekNextCharacter() == '=')
+                            {
+                                NextPosition();
+                                _tokens.Add(new Token(TokenType.GREATER_EQUALS, ">=", _currentCharPosition++, null));
+                                break;
+                            }
+                            _tokens.Add(new Token(TokenType.GREATER, ">", _currentCharPosition++, null));
+                            break;
+                        case '<':
+                            if (PeekNextCharacter() == '=')
+                            {
+                                NextPosition();
+                                _tokens.Add(new Token(TokenType.LESS_EQUALS, "<=", _currentCharPosition++, null));
+                                break;
+                            }
+                                
+                            _tokens.Add(new Token(TokenType.LESS, "<", _currentCharPosition++, null));
+                            break;
+                        case '&':
+                            if (PeekNextCharacter() == '&')
+                            {
+                                NextPosition();
+                                _tokens.Add(new Token(TokenType.AND, "&&", _currentCharPosition++, null));
+                                break;
+                            }
+                            _tokens.Add(new Token(TokenType.UNKNOWN_TOKEN, _currentLineOfSourceCode.Substring(_currentCharPosition, 1), _currentCharPosition++, null));
+                            break;                            
+                        case '|':
+                            if (PeekNextCharacter() == '|')
+                            {
+                                NextPosition();
+                                _tokens.Add(new Token(TokenType.OR, "||", _currentCharPosition++, null));
+                                break;
+                            }
+                            _tokens.Add(new Token(TokenType.UNKNOWN_TOKEN, _currentLineOfSourceCode.Substring(_currentCharPosition, 1), _currentCharPosition++, null));
+                            break;
+                        // recognising punctuation
+                        case '(':
+                            _tokens.Add(new Token(TokenType.LEFT_PARENTHESES, "(", _currentCharPosition++, null));
+                            break;
+                        case ')':
+                            _tokens.Add(new Token(TokenType.RIGHT_PARENTHESES, ")", _currentCharPosition++, null));
+                            break;
+                        case '{':
+                            _tokens.Add(new Token(TokenType.LEFT_BRACES, "{", _currentCharPosition++, null));
+                            break;
+                        case '}':
+                            _tokens.Add(new Token(TokenType.RIGHT_BRACES, "}", _currentCharPosition++, null));
+                            break;
+                        case '[':
+                            _tokens.Add(new Token(TokenType.LEFT_BRACKETS, "[", _currentCharPosition++, null));
+                            break;
+                        case ']':
+                            _tokens.Add(new Token(TokenType.RIGHT_BRACKETS, "]", _currentCharPosition++, null));
+                            break;
+                        case ',':
+                            _tokens.Add(new Token(TokenType.COMMA, ",", _currentCharPosition++, null));
+                            break;
+                        case '.':
+                            _tokens.Add(new Token(TokenType.DOT, ".", _currentCharPosition++, null));
+                            break;
+                        case ';':
+                            _tokens.Add(new Token(TokenType.SEMICOLON, ";", _currentCharPosition++, null));
+                            break;
+                        case ':':
+                            _tokens.Add(new Token(TokenType.COLON, ":", _currentCharPosition++, null));
+                            break;
+                        case '\0':
+                            _tokens.Add(new Token(TokenType.END_OF_CODE, "\0", _currentCharPosition, null));
+                            return;
+                        default:
+                            if (Char.IsDigit(GetCurrentCharacter()))
+                            {
+                                ScanIntegerNumber();
+                                break;
+                            }
 
-                    NextLine();
-                }
-                else
-                {
-                    return new Token(TokenType.SLASH, "/", _currentCharPosition++, null);
+                            if (Char.IsLetter(GetCurrentCharacter()) || GetCurrentCharacter() == '_')
+                            {
+                                ScanIdentifier();
+                                break;
+                            }
+
+
+                            _tokens.Add(new Token(TokenType.UNKNOWN_TOKEN, _currentLineOfSourceCode.Substring(_currentCharPosition, 1), _currentCharPosition++, null));
+                            break;
+                    }
                 }
             }
 
-            if (GetCurrentCharacter() == '=')
-            {
-                if (PeekNextCharacter() == '=')
-                {
-                    NextPosition();
-                    return new Token(TokenType.EQUALS_EQUALS, "==", _currentCharPosition++, null);
-                }
-                else
-                {
-                    return new Token(TokenType.EQUALS, "=", _currentCharPosition++, null);
-                }
-            }
+            // TODO
+            // recognise strings
 
-            if (GetCurrentCharacter() == '>')
-            {
-                if (PeekNextCharacter() == '=')
-                {
-                    NextPosition();
-                    return new Token(TokenType.GREATER_EQUALS, ">=", _currentCharPosition++, null);
-                }
-                else
-                {
-                    return new Token(TokenType.GREATER, ">", _currentCharPosition++, null);
-                }
-            }
-            
-            if (GetCurrentCharacter() == '<')
-            {
-                if (PeekNextCharacter() == '=')
-                {
-                    NextPosition();
-                    return new Token(TokenType.LESS_EQUALS, "<=", _currentCharPosition++, null);
-                }
-                else
-                {
-                    return new Token(TokenType.LESS, "<", _currentCharPosition++, null);
-                }
-            }
-
-            if (GetCurrentCharacter() == '&')
-            {
-                if (PeekNextCharacter() == '&')
-                {
-                    NextPosition();
-                    return new Token(TokenType.AND, "&&", _currentCharPosition++, null);
-                }
-            }
-
-            if (GetCurrentCharacter() == '|')
-            {
-                if (PeekNextCharacter() == '|')
-                {
-                    NextPosition();
-                    return new Token(TokenType.OR, "||", _currentCharPosition++, null);
-                }
-            }
-
-            // recognising punctuation
-
-            if (GetCurrentCharacter() == '(') return new Token(TokenType.LEFT_PARENTHESES, "(", _currentCharPosition++, null);
-            if (GetCurrentCharacter() == ')') return new Token(TokenType.RIGHT_PARENTHESES, ")", _currentCharPosition++, null);
-            if (GetCurrentCharacter() == '{') return new Token(TokenType.LEFT_BRACES, "{", _currentCharPosition++, null);
-            if (GetCurrentCharacter() == '}') return new Token(TokenType.RIGHT_BRACES, "}", _currentCharPosition++, null);
-            if (GetCurrentCharacter() == '[') return new Token(TokenType.LEFT_BRACKETS, "[", _currentCharPosition++, null);
-            if (GetCurrentCharacter() == ']') return new Token(TokenType.RIGHT_BRACKETS, "]", _currentCharPosition++, null);
-            if (GetCurrentCharacter() == ',') return new Token(TokenType.COMMA, ",", _currentCharPosition++, null);
-            if (GetCurrentCharacter() == '.') return new Token(TokenType.DOT, ".", _currentCharPosition++, null);
-            if (GetCurrentCharacter() == ';') return new Token(TokenType.SEMICOLON, ";", _currentCharPosition++, null);
-            if (GetCurrentCharacter() == ':') return new Token(TokenType.COLON, ":", _currentCharPosition++, null);
-
-            // recognising identifies
-
-            if (Char.IsLetter(GetCurrentCharacter()) || GetCurrentCharacter() == '_')
-            {                
-                var startPosition = _currentCharPosition;
-
-                while (Char.IsLetterOrDigit(GetCurrentCharacter()) || GetCurrentCharacter() == '_')
-                {
-                    NextPosition();
-                }
-
-                int lengthOfIdentifier = _currentCharPosition - startPosition;
-                string textIdentifier = _currentLineOfSourceCode.Substring(startPosition, lengthOfIdentifier);
-                
-                return new Token(TokenType.IDENTIFIER, textIdentifier, startPosition, null);
-            }
-
-            // recognising reserved words
-
-            // string literals
-
-            if (GetCurrentCharacter() == '"')
+   /*         if (GetCurrentCharacter() == '"')
             {
 
                 var stringStartPosition = _currentCharPosition;
@@ -308,7 +270,7 @@ namespace Scanner
                     int lengthOfstring = _currentCharPosition - stringStartPosition;
                     string textIdentifier = _currentLineOfSourceCode.Substring(stringStartPosition, lengthOfstring);
 
-                    return new Token(TokenType.STRING, textIdentifier, stringStartPosition, null);
+                    _tokens.Add(new Token(TokenType.STRING, textIdentifier, stringStartPosition, null));
                 }
                 else
                 {
@@ -320,16 +282,49 @@ namespace Scanner
                     }
                 }
 
-            }
-
-            // unknown characters
-
-            return new Token(TokenType.UNKNOWN_TOKEN, _currentLineOfSourceCode.Substring(_currentCharPosition , 1), _currentCharPosition++, null);
-
+            }*/
 
         }
 
-        public void CheckString()
+        private void ScanIdentifier()
+        {
+            var startPosition = _currentCharPosition;
+
+            while (Char.IsLetterOrDigit(GetCurrentCharacter()) || GetCurrentCharacter() == '_')
+            {
+                NextPosition();
+            }
+
+            int lengthOfIdentifier = _currentCharPosition - startPosition;
+            string textIdentifier = _currentLineOfSourceCode.Substring(startPosition, lengthOfIdentifier);
+
+            _tokens.Add(new Token(TokenType.IDENTIFIER, textIdentifier, startPosition, null));
+        }
+
+        private void ScanIntegerNumber()
+        {
+            int startPosition = _currentCharPosition;
+
+            while (Char.IsDigit(GetCurrentCharacter()))
+            {
+                NextPosition();
+            }
+
+            int lengthOfNumber = _currentCharPosition - startPosition;
+            string textNumber = _currentLineOfSourceCode.Substring(startPosition, lengthOfNumber);
+
+            try
+            {
+                int numberValue = int.Parse(textNumber);
+                _tokens.Add(new Token(TokenType.NUMBER, textNumber, startPosition, numberValue));
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Invalid integer at {startPosition} {ex}.");
+            }
+        }
+
+        private void CheckString()
         {
             while (PeekNextCharacter() != '"')
             {
