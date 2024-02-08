@@ -229,6 +229,11 @@ namespace Scanner
                         case ':':
                             _tokens.Add(new Token(TokenType.COLON, ":", _currentCharPosition++, null));
                             break;
+                        case '"':
+                            // TODO
+                            // recognise strings
+                            ScanString();
+                            break;
                         case '\0':
                             _tokens.Add(new Token(TokenType.END_OF_CODE, "\0", _currentCharPosition, null));
                             return;
@@ -252,38 +257,7 @@ namespace Scanner
                 }
             }
 
-            // TODO
-            // recognise strings
-
-   /*         if (GetCurrentCharacter() == '"')
-            {
-
-                var stringStartPosition = _currentCharPosition;
-                var stringStartLine = _currentLinePosition;
-
-                //NextPosition();
-                CheckString();
-
-                // if \n is not on the string
-                if(stringStartLine == _currentLinePosition)
-                {
-                    int lengthOfstring = _currentCharPosition - stringStartPosition;
-                    string textIdentifier = _currentLineOfSourceCode.Substring(stringStartPosition, lengthOfstring);
-
-                    _tokens.Add(new Token(TokenType.STRING, textIdentifier, stringStartPosition, null));
-                }
-                else
-                {
-
-                    // go through each line of this multiple line string
-                    for(int i = stringStartLine; i < _currentLinePosition - stringStartLine; i++)
-                    {
-
-                    }
-                }
-
-            }*/
-
+            
         }
 
         private void ScanIdentifier()
@@ -324,7 +298,35 @@ namespace Scanner
             }
         }
 
-        private void CheckString()
+        private void ScanString()
+        {
+            var stringStartPosition = _currentCharPosition;
+            var stringStartLine = _currentLinePosition;
+
+            //NextPosition();
+            TraverseString();
+            NextPosition();
+
+            // if \n is not on the string
+            if (stringStartLine == _currentLinePosition)
+            {
+                int lengthOfstring = _currentCharPosition - stringStartPosition;
+                string textIdentifier = _currentLineOfSourceCode.Substring(stringStartPosition, lengthOfstring);
+
+                _tokens.Add(new Token(TokenType.STRING, textIdentifier, stringStartPosition, null));
+            }
+            else
+            {
+                // Todo
+                // go through each line of this multiple line string
+                /*for (int i = stringStartLine; i < _currentLinePosition - stringStartLine; i++)
+                {
+
+                }*/
+            }
+        }
+
+        private void TraverseString()
         {
             while (PeekNextCharacter() != '"')
             {
@@ -340,7 +342,7 @@ namespace Scanner
                 }
 
                 NextPosition();
-                if (IsEndOfLine()) break;
+                if(_currentCharPosition == _currentLineOfSourceCode.Length-1 ) break;
 
             }
 
