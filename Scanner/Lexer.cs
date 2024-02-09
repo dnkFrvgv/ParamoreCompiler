@@ -52,7 +52,7 @@ namespace Scanner
 
         private char GetCurrentCharacter()
         {
-            if (_currentCharPosition >= _currentLineOfSourceCode.Length)
+            if (IsEndOfSourceCode())
             {
                 return '\0';
             }
@@ -78,7 +78,18 @@ namespace Scanner
 
         private bool IsEndOfLine()
         {
-            return _currentCharPosition++ == _currentLineOfSourceCode.Length;
+            // if index is bigger that last char index
+            return _currentCharPosition == _currentLineOfSourceCode.Length;
+        }
+
+        private bool IsEndOfSourceCode()
+        {
+            // is this the last line of code?
+            if(_currentLinePosition == _sourceCodeLines.Length - 1)
+            {
+                return IsEndOfLine();
+            }
+            return false;
         }
 
         private void NextLine()
@@ -92,23 +103,14 @@ namespace Scanner
 
         }
 
-        private bool IsEndOfSourceCode()
-        {
-            // is this the last line of code?
-            if(_currentLinePosition++ == _sourceCodeLines.Length)
-            {
-                return IsEndOfLine();
-            }
-            return false;
-        }
-
         private void GenerateTokens()
         {
+
             while (true)
             {
-                if (IsEndOfSourceCode())
-                {
-                    break;
+                if(IsEndOfSourceCode()) {
+                    _tokens.Add(new Token(TokenType.END_OF_CODE, "\0", _currentCharPosition, null));
+                    return;
                 }
                 if (IsEndOfLine())
                 {
@@ -221,13 +223,10 @@ namespace Scanner
                         case ':':
                             _tokens.Add(new Token(TokenType.COLON, ":", _currentCharPosition++, null));
                             break;
-                        case '"':
+                        /*case '"':
                             // recognise strings
-                            ScanString();
-                            break;
-                        case '\0':
-                            _tokens.Add(new Token(TokenType.END_OF_CODE, "\0", _currentCharPosition, null));
-                            return;
+                            ScanString();*/
+                            //break;
                         default:
                             if (Char.IsDigit(GetCurrentCharacter()))
                             {
