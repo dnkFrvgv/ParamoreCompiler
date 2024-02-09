@@ -106,14 +106,13 @@ namespace Scanner
         {
             while (true)
             {
+                if (IsEndOfSourceCode())
+                {
+                    break;
+                }
                 if (IsEndOfLine())
                 {
-                    //TODO
-                    //check if next line exists
-                    // and deal with multiple lines
-
-                    //NextLine();
-                    break;
+                    NextLine();
                 }
                 else
                 {
@@ -223,7 +222,6 @@ namespace Scanner
                             _tokens.Add(new Token(TokenType.COLON, ":", _currentCharPosition++, null));
                             break;
                         case '"':
-                            // TODO
                             // recognise strings
                             ScanString();
                             break;
