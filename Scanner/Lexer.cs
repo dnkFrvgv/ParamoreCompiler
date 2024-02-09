@@ -78,7 +78,7 @@ namespace Scanner
 
         private bool IsEndOfLine()
         {
-            return _currentCharPosition == _currentLineOfSourceCode.Length;
+            return _currentCharPosition++ == _currentLineOfSourceCode.Length;
         }
 
         private void NextLine()
