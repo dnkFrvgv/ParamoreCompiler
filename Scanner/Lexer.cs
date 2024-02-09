@@ -317,13 +317,38 @@ namespace Scanner
             }
             else
             {
-                // Todo
-                // go through each line of this multiple line string
-                /*for (int i = stringStartLine; i < _currentLinePosition - stringStartLine; i++)
+                ScanStringLiteral(stringStartLine, stringStartPosition);
+            }
+        }
+
+        private void ScanStringLiteral(int stringStartLine, int stringStartPosition)
+        {
+            string[] stringLiteralArray = new string[stringStartLine - _currentLinePosition];
+
+            // go through each line of this string literal
+            for (int line = stringStartLine; line == _currentLinePosition; line++)
+            {
+                // first line of string literal
+                if (line == stringStartLine)
                 {
+                    stringLiteralArray[0] = _sourceCodeLines[line].Substring(stringStartPosition);
+                }
+                // last line of string literal
+                if (line == _currentLinePosition)
+                {
+                    stringLiteralArray[stringLiteralArray.Length] = _sourceCodeLines[line].Substring(0, _currentCharPosition);
+                }
+                else
+                {
+                    // TODO
+                }
 
                 }*/
             }
+
+            string stringLiteralIdentifier = string.Join(" ", stringLiteralArray);
+
+            _tokens.Add(new Token(TokenType.STRING, stringLiteralIdentifier, stringStartPosition, null));
         }
 
         private void TraverseString()
