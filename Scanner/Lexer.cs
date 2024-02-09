@@ -94,10 +94,10 @@ namespace Scanner
 
         private bool IsEndOfSourceCode()
         {
+            // is this the last line of code?
             if(_currentLinePosition++ == _sourceCodeLines.Length)
             {
-                // check if is the last char of this line
-                return true;
+                return IsEndOfLine();
             }
             return false;
         }
