@@ -294,11 +294,10 @@ namespace Scanner
             var stringStartPosition = _currentCharPosition;
             var stringStartLine = _currentLinePosition;
 
-            //NextPosition();
             TraverseString();
             NextPosition();
 
-            // if \n is not on the string
+            // if is not on the string literal
             if (stringStartLine == _currentLinePosition)
             {
                 int lengthOfstring = _currentCharPosition - stringStartPosition;
@@ -338,7 +337,6 @@ namespace Scanner
                     arrayIndex++;
                 }
 
-                }*/
             }
 
             string stringLiteralIdentifier = string.Join(" ", stringLiteralArray);
