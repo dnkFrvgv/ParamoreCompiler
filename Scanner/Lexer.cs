@@ -70,14 +70,7 @@ namespace Scanner
             else
             {
 
-                GetToken();
-               /* while (true)
-                {
-                    var token = GetToken();
-                    _tokens.Add(token);
-
-                    if (token.Type == TokenType.END_OF_CODE) break;
-                }*/
+                GenerateTokens();
 
                 return _tokens;
             }
@@ -109,7 +102,7 @@ namespace Scanner
             return false;
         }
 
-        private void GetToken()
+        private void GenerateTokens()
         {
             while (true)
             {
