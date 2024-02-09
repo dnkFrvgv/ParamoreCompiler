@@ -324,6 +324,7 @@ namespace Scanner
         private void ScanStringLiteral(int stringStartLine, int stringStartPosition)
         {
             string[] stringLiteralArray = new string[stringStartLine - _currentLinePosition];
+            int arrayIndex = 0;
 
             // go through each line of this string literal
             for (int line = stringStartLine; line == _currentLinePosition; line++)
@@ -331,16 +332,19 @@ namespace Scanner
                 // first line of string literal
                 if (line == stringStartLine)
                 {
-                    stringLiteralArray[0] = _sourceCodeLines[line].Substring(stringStartPosition);
+                    stringLiteralArray[arrayIndex] = _sourceCodeLines[line].Substring(stringStartPosition);
+                    arrayIndex++;
                 }
                 // last line of string literal
                 if (line == _currentLinePosition)
                 {
-                    stringLiteralArray[stringLiteralArray.Length] = _sourceCodeLines[line].Substring(0, _currentCharPosition);
+                    stringLiteralArray[arrayIndex] = _sourceCodeLines[line].Substring(0, _currentCharPosition);
+                    arrayIndex++;
                 }
                 else
                 {
-                    // TODO
+                    stringLiteralArray[arrayIndex] = _sourceCodeLines[line];
+                    arrayIndex++;
                 }
 
                 }*/
