@@ -52,12 +52,14 @@ namespace Scanner
 
         private char GetCurrentCharacter()
         {
-            if (IsEndOfSourceCode())
+            if (!IsEndOfLine())
+            {
+                return _currentLineOfSourceCode[_currentCharPosition];
+            }
+            else
             {
                 return '\0';
             }
-
-            return _currentLineOfSourceCode[_currentCharPosition];
         }
 
         public List<Token> GetTokenList()
@@ -223,10 +225,12 @@ namespace Scanner
                         case ':':
                             _tokens.Add(new Token(TokenType.COLON, ":", _currentCharPosition++, null));
                             break;
+                        case '\0':
+                            throw new Exception("GenerateTokens method - New line was not handled properly");
                         /*case '"':
                             // recognise strings
                             ScanString();*/
-                            //break;
+                        //break;
                         default:
                             if (Char.IsDigit(GetCurrentCharacter()))
                             {
