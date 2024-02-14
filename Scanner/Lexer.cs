@@ -227,10 +227,10 @@ namespace Scanner
                             break;
                         case '\0':
                             throw new Exception("GenerateTokens method - New line was not handled properly");
-                        /*case '"':
+                        case '"':
                             // recognise strings
-                            ScanString();*/
-                        //break;
+                            ScanString();
+                        break;
                         default:
                             if (Char.IsDigit(GetCurrentCharacter()))
                             {
@@ -300,6 +300,7 @@ namespace Scanner
             TraverseString();
             NextPosition();
 
+
             // if is not on the string literal
             if (stringStartLine == _currentLinePosition)
             {
@@ -316,28 +317,31 @@ namespace Scanner
 
         private void ScanStringLiteral(int stringStartLine, int stringStartPosition)
         {
-            string[] stringLiteralArray = new string[stringStartLine - _currentLinePosition];
+            string[] stringLiteralArray = new string[(_currentLinePosition - stringStartLine)+1];
             int arrayIndex = 0;
 
             // go through each line of this string literal
-            for (int line = stringStartLine; line == _currentLinePosition; line++)
+            for (int line = stringStartLine; line <= _currentLinePosition; line++)
             {
                 // first line of string literal
                 if (line == stringStartLine)
                 {
                     stringLiteralArray[arrayIndex] = _sourceCodeLines[line].Substring(stringStartPosition);
                     arrayIndex++;
+                    continue;
                 }
                 // last line of string literal
                 if (line == _currentLinePosition)
                 {
                     stringLiteralArray[arrayIndex] = _sourceCodeLines[line].Substring(0, _currentCharPosition);
                     arrayIndex++;
+                    continue;
                 }
                 else
                 {
                     stringLiteralArray[arrayIndex] = _sourceCodeLines[line];
                     arrayIndex++;
+                    continue;
                 }
 
             }
@@ -368,6 +372,8 @@ namespace Scanner
             }
 
             NextPosition();
+
+            //NextPosition();
 
             // no end "
             /*if(IsEndOfLine() || GetCurrentCharacter() != '"')
