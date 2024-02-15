@@ -47,7 +47,7 @@ namespace Compiler
         {
             while (true)
             {
-                if (_hasError) break;
+                // if (_hasError) break;
 
                 Console.Write("** ");
 
@@ -69,9 +69,7 @@ namespace Compiler
 
         private void Run(string[] sourceCode)
         {
-            // TODO
-            // new up the lexer from run method please
-            // or delete last tokenlist of the lexer
+
             _lexer.AddSourceCode(sourceCode);
             var tokens = _lexer.GetTokenList();
 

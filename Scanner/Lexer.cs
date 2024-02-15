@@ -16,10 +16,12 @@ namespace Scanner
     {
         private string[] _sourceCodeLines;
         private string _currentLineOfSourceCode;
-        //private int _start = 0;
+        
         private int _currentLinePosition = 0;
         private int _currentCharPosition = 0;
-        private List<Token> _tokens = new List<Token>();
+
+        private List<Token> _tokens;
+        private readonly Dictionary<string, TokenType> _reservedWords = InitialiseReservedWords();
 
         /**public Lexer(string[] sourceCode)
         {
@@ -27,14 +29,35 @@ namespace Scanner
             _currentLine = _sourceCode[_line-1];
         }**/
 
-        public Lexer(){}
-
         public void AddSourceCode(string[] sourceCodeLines)
         {
+            _tokens = new List<Token>();
             _sourceCodeLines = sourceCodeLines;
             _currentLineOfSourceCode = _sourceCodeLines[0];
         }
-      
+
+        private static Dictionary<string, TokenType> InitialiseReservedWords()
+        {
+            var reservedWords = new Dictionary<string, TokenType>();
+
+            reservedWords.Add("if", TokenType.IF);
+            reservedWords.Add("else", TokenType.ELSE);
+            reservedWords.Add("return", TokenType.RETURN);
+            reservedWords.Add("true", TokenType.TRUE);
+            reservedWords.Add("false", TokenType.FALSE);
+            reservedWords.Add("var", TokenType.VAR);
+            reservedWords.Add("while", TokenType.WHILE);
+            reservedWords.Add("for", TokenType.FOR);
+            reservedWords.Add("class", TokenType.CLASS);
+            reservedWords.Add("and", TokenType.AND);
+            reservedWords.Add("or", TokenType.OR);
+            reservedWords.Add("print", TokenType.PRINT);
+            reservedWords.Add("this", TokenType.THIS);
+
+            return reservedWords;
+        }
+
+
         private void NextPosition() {
             _currentCharPosition++;
         }
@@ -80,7 +103,7 @@ namespace Scanner
 
         private bool IsEndOfLine()
         {
-            // if index is bigger that last char index
+            // was the last char of line already tokenised ?
             return _currentCharPosition == _currentLineOfSourceCode.Length;
         }
 
@@ -265,6 +288,14 @@ namespace Scanner
 
             int lengthOfIdentifier = _currentCharPosition - startPosition;
             string textIdentifier = _currentLineOfSourceCode.Substring(startPosition, lengthOfIdentifier);
+
+            if(_reservedWords.ContainsKey(textIdentifier))
+            {
+                TokenType tokenType = _reservedWords[textIdentifier];
+
+                _tokens.Add(new Token(tokenType, textIdentifier, startPosition, null));
+                return;
+            }
 
             _tokens.Add(new Token(TokenType.IDENTIFIER, textIdentifier, startPosition, null));
         }

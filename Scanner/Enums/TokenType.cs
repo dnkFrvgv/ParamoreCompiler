@@ -20,5 +20,6 @@ namespace Scanner.Enums
         LEFT_BRACKETS, RIGHT_BRACKETS, LEFT_BRACES, RIGHT_BRACES, COLON,
         // Keywords
         CLASS, IF, ELSE, FOR, FALSE, TRUE, RETURN, THIS, VAR, WHILE,
+        PRINT,
     }
 }
