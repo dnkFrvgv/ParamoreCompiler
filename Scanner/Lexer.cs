@@ -16,10 +16,12 @@ namespace Scanner
     {
         private string[] _sourceCodeLines;
         private string _currentLineOfSourceCode;
-        //private int _start = 0;
+        
         private int _currentLinePosition = 0;
         private int _currentCharPosition = 0;
-        private List<Token> _tokens = new List<Token>();
+
+        private List<Token> _tokens;
+        private readonly Dictionary<string, TokenType> _reservedWords = InitialiseReservedWords();
 
         /**public Lexer(string[] sourceCode)
         {
@@ -27,14 +29,35 @@ namespace Scanner
             _currentLine = _sourceCode[_line-1];
         }**/
 
-        public Lexer(){}
-
         public void AddSourceCode(string[] sourceCodeLines)
         {
+            _tokens = new List<Token>();
             _sourceCodeLines = sourceCodeLines;
             _currentLineOfSourceCode = _sourceCodeLines[0];
         }
-      
+
+        private static Dictionary<string, TokenType> InitialiseReservedWords()
+        {
+            var reservedWords = new Dictionary<string, TokenType>();
+
+            reservedWords.Add("if", TokenType.IF);
+            reservedWords.Add("else", TokenType.ELSE);
+            reservedWords.Add("return", TokenType.RETURN);
+            reservedWords.Add("true", TokenType.TRUE);
+            reservedWords.Add("false", TokenType.FALSE);
+            reservedWords.Add("var", TokenType.VAR);
+            reservedWords.Add("while", TokenType.WHILE);
+            reservedWords.Add("for", TokenType.FOR);
+            reservedWords.Add("class", TokenType.CLASS);
+            reservedWords.Add("and", TokenType.AND);
+            reservedWords.Add("or", TokenType.OR);
+            reservedWords.Add("print", TokenType.PRINT);
+            reservedWords.Add("this", TokenType.THIS);
+
+            return reservedWords;
+        }
+
+
         private void NextPosition() {
             _currentCharPosition++;
         }
@@ -52,12 +75,14 @@ namespace Scanner
 
         private char GetCurrentCharacter()
         {
-            if (_currentCharPosition >= _currentLineOfSourceCode.Length)
+            if (!IsEndOfLine())
+            {
+                return _currentLineOfSourceCode[_currentCharPosition];
+            }
+            else
             {
                 return '\0';
             }
-
-            return _currentLineOfSourceCode[_currentCharPosition];
         }
 
         public List<Token> GetTokenList()
@@ -78,7 +103,18 @@ namespace Scanner
 
         private bool IsEndOfLine()
         {
-            return _currentCharPosition++ == _currentLineOfSourceCode.Length;
+            // was the last char of line already tokenised ?
+            return _currentCharPosition == _currentLineOfSourceCode.Length;
+        }
+
+        private bool IsEndOfSourceCode()
+        {
+            // is this the last line of code?
+            if(_currentLinePosition == _sourceCodeLines.Length - 1)
+            {
+                return IsEndOfLine();
+            }
+            return false;
         }
 
         private void NextLine()
@@ -92,23 +128,14 @@ namespace Scanner
 
         }
 
-        private bool IsEndOfSourceCode()
-        {
-            // is this the last line of code?
-            if(_currentLinePosition++ == _sourceCodeLines.Length)
-            {
-                return IsEndOfLine();
-            }
-            return false;
-        }
-
         private void GenerateTokens()
         {
+
             while (true)
             {
-                if (IsEndOfSourceCode())
-                {
-                    break;
+                if(IsEndOfSourceCode()) {
+                    _tokens.Add(new Token(TokenType.END_OF_CODE, "\0", _currentCharPosition, null));
+                    return;
                 }
                 if (IsEndOfLine())
                 {
@@ -221,13 +248,12 @@ namespace Scanner
                         case ':':
                             _tokens.Add(new Token(TokenType.COLON, ":", _currentCharPosition++, null));
                             break;
+                        case '\0':
+                            throw new Exception("GenerateTokens method - New line was not handled properly");
                         case '"':
                             // recognise strings
                             ScanString();
-                            break;
-                        case '\0':
-                            _tokens.Add(new Token(TokenType.END_OF_CODE, "\0", _currentCharPosition, null));
-                            return;
+                        break;
                         default:
                             if (Char.IsDigit(GetCurrentCharacter()))
                             {
@@ -263,6 +289,14 @@ namespace Scanner
             int lengthOfIdentifier = _currentCharPosition - startPosition;
             string textIdentifier = _currentLineOfSourceCode.Substring(startPosition, lengthOfIdentifier);
 
+            if(_reservedWords.ContainsKey(textIdentifier))
+            {
+                TokenType tokenType = _reservedWords[textIdentifier];
+
+                _tokens.Add(new Token(tokenType, textIdentifier, startPosition, null));
+                return;
+            }
+
             _tokens.Add(new Token(TokenType.IDENTIFIER, textIdentifier, startPosition, null));
         }
 
@@ -297,6 +331,7 @@ namespace Scanner
             TraverseString();
             NextPosition();
 
+
             // if is not on the string literal
             if (stringStartLine == _currentLinePosition)
             {
@@ -313,28 +348,31 @@ namespace Scanner
 
         private void ScanStringLiteral(int stringStartLine, int stringStartPosition)
         {
-            string[] stringLiteralArray = new string[stringStartLine - _currentLinePosition];
+            string[] stringLiteralArray = new string[(_currentLinePosition - stringStartLine)+1];
             int arrayIndex = 0;
 
             // go through each line of this string literal
-            for (int line = stringStartLine; line == _currentLinePosition; line++)
+            for (int line = stringStartLine; line <= _currentLinePosition; line++)
             {
                 // first line of string literal
                 if (line == stringStartLine)
                 {
                     stringLiteralArray[arrayIndex] = _sourceCodeLines[line].Substring(stringStartPosition);
                     arrayIndex++;
+                    continue;
                 }
                 // last line of string literal
                 if (line == _currentLinePosition)
                 {
                     stringLiteralArray[arrayIndex] = _sourceCodeLines[line].Substring(0, _currentCharPosition);
                     arrayIndex++;
+                    continue;
                 }
                 else
                 {
                     stringLiteralArray[arrayIndex] = _sourceCodeLines[line];
                     arrayIndex++;
+                    continue;
                 }
 
             }
@@ -365,6 +403,8 @@ namespace Scanner
             }
 
             NextPosition();
+
+            //NextPosition();
 
             // no end "
             /*if(IsEndOfLine() || GetCurrentCharacter() != '"')
