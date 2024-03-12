@@ -15,6 +15,8 @@ Esse projeto ainda está em andamento.
 ## Features
 
 - [x] Scanner
-- [ ] Parser
+- Geração de tokens a partir de uma arquivo de texto:
 
 ![scanner](imgs/scanner.jpeg)
+
+- [ ] Parser
