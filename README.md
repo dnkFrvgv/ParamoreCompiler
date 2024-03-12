@@ -16,3 +16,5 @@ Esse projeto ainda está em andamento.
 
 - [x] Scanner
 - [ ] Parser
+
+![scanner](imgs/scanner.jpeg)
