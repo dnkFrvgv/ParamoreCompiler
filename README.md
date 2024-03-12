@@ -11,3 +11,8 @@ Esse projeto ainda está em andamento.
 
 - C#
 - .NET
+
+## Features
+
+- [x] Scanner
+- [ ] Parser
